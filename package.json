@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-ha-state",
   "version": "1.0.0",
-  "description": "A set of nodes to help with basic home automation logic",
+  "description": "observable things in node red",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rswilli/node-red-contrib-ha-state"
@@ -10,7 +10,8 @@
     "node-red",
     "home-automation",
     "state",
-    "ha"
+    "ha",
+    "things"
   ],
   "author": "Wilhelm Bartel",
   "license": "ISC",
