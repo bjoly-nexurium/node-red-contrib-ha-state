@@ -1,7 +1,7 @@
 <script type="text/javascript">
     RED.nodes.registerType('haStateValue', {
         category: 'Home Automation',
-        color: '#b3b3ff',
+        color: '#6df4ac',
         defaults: {
             thing: {
                 type: "haStateThing",
@@ -28,7 +28,11 @@
         outputs: 1,
         icon: "value.png",
         label: function () {
-            return this.name || "value";
+            if (this.state) {
+                return `get ${this.state}`;
+            }
+
+            return "value";
         },
         paletteLabel: "value",
         oneditprepare: function () {

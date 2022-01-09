@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateDynamicAction', {
+        category: 'Home Automation',
+        color: '#6df4ac',
+        inputs: 1,
+        outputs: 0,
+        defaults: {},
+        icon: "action.png",
+        label: function () {
+            return "dynamic action";
+        },
+        paletteLabel: "dynamic action"
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateDynamicAction">
+
+</script>
+
+<script type="text/x-red" data-help-name="haStateDynamicAction">
+    <p>The dynamic Action node updates the state by getting values from the icoming message:</p>
+    <code>
+        <pre>
+{
+    "thing": "", // Thing ID
+    "topic": "", // the state to update
+    "payload": "", // the new value
+    "silent": false    // if true, the events will not fire, default false
+}
+        </pre>
+    </code>
+</script>

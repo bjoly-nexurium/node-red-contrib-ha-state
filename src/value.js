@@ -25,8 +25,9 @@ module.exports = function (RED) {
             const out = node.thingInfo ? {
                 value,
                 thing: {
-                    attributes: this.thing.attributes,
-                    states: this.thing.states
+                    id: node.thing.id,
+                    attributes: node.thing.attributes,
+                    states: node.thing.states
                 },
             } : value
 

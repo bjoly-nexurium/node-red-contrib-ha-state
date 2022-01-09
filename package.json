@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-ha-state",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "observable things in node red",
   "repository": {
     "type": "git",
@@ -26,7 +26,8 @@
       "haStateValue": "src/value.js",
       "haStateEvent": "src/event.js",
       "haStateGate": "src/gate.js",
-      "haStateAction": "src/action.js"
+      "haStateAction": "src/action.js",
+      "haStateDynamicAction": "src/dynamicAction.js"
     }
   }
 }
