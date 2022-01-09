@@ -1,4 +1,4 @@
-# node-red-contrib-haState
+# node-red-contrib-ha-state
 
 observable things in node red
 
