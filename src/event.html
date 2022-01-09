@@ -1,0 +1,92 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateEvent', {
+        category: 'Home Automation',
+        color: '#b3b3ff',
+        defaults: {
+            thing: {
+                type: "haStateThing",
+                required: true
+            },
+            state: {
+                required: true,
+                value: ""
+            }
+        },
+        inputs: 0,
+        outputs: 1,
+        icon: "event.png",
+        label: function () {
+            return this.name || "event";
+        },
+        paletteLabel: "event",
+        oneditprepare: function () {
+            var node = this;
+
+            const select = $("#node-input-state")
+
+            $("#node-input-thing").change(function () {
+                let thing = RED.nodes.node($("#node-input-thing").val());
+
+                select.empty();
+
+                if (!thing) return
+
+                $('<option value="">Choose an State...</option>').appendTo(select)
+
+                for (const i of Object.keys(thing.states)) {
+                    $('<option/>', { value: i })
+                        .appendTo(select)
+                        .append(i)
+                }
+
+                select.val(node.state)
+            });
+
+            $("#node-input-thing").trigger('change');
+        },
+        oneditsave: function () {
+            var node = this;
+
+            node.attributes = {};
+            $("#attributes-list")
+                .editableList('items')
+                .each(function () {
+                    let state = $(this);
+
+                    const inp = state.find(".attribute-value-property")
+
+                    const type = inp.typedInput("type")
+
+                    const val = inp.typedInput('value');
+
+                    node.attributes[inp.data("label")] = type == "str" ? val : JSON.parse(val);
+
+                })
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateEvent">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-input-thing"><i class="fa fa-microchip"></i> Thing</label>
+        <input type="text" id="node-input-thing" style="width:70%" placeholder="Type">
+    </div>
+    <div class="form-row">
+        <label for="node-input-state"><i class="fa fa-microchip"></i> State</label>
+        <select id="node-input-state" style="width:70%">
+            <option disabled value="">Choose an State...</option>
+        </select>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="haStateEvent">
+    <p>The Event node sends a message on state update</p>
+    <li><strong>Name</strong>: Node name.</li> 
+    <li><strong>Thing</strong>: The thing to watch.</li>
+    <li><strong>State</strong>: the state of the thing to watch.</li>
+</script>

@@ -1,0 +1,179 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateThing', {
+        category: 'config',
+        defaults: {
+            thingType: {
+                value: "Type",
+                type: "haStateThingType",
+                required: true
+            },
+            name: {
+                required: true
+            },
+            attributes: {},
+            states: {}
+        },
+        label: function () {
+            return this.name || "thing";
+        },
+        oneditprepare: function () {
+            var node = this;
+
+            node.attributes = node.attributes ?? {}
+            node.states = node.states ?? {}
+
+            //Attributes list
+            $("#attributes-list").editableList({
+                addItem: function (container, i, opt) {
+                    var attribute = opt;
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        display: "grid",
+                        "grid-template-columns": "auto 1fr",
+                        gap: "8px",
+                        "place-items": "center start"
+                    });
+
+                    var labelAttrName = $('<div/>', { class: "fa fa-tag" })
+                        .appendTo(container)
+                        .append(' ' + attribute.name)
+
+                    var valueProperty = $('<input/>', { class: "attribute-value-property", style: "width: 100%", type: "text" })
+                        .appendTo(container)
+
+                    valueProperty.typedInput({
+                        type: attribute.type,
+                        types: [attribute.type]
+                    })
+                        .data("label", attribute.name)
+                        .typedInput("value", attribute.val)
+
+                },
+                removable: false,
+                sortable: false,
+                addButton: false
+            });
+
+            //states list
+            $("#states-list").editableList({
+                addItem: function (container, i, opt) {
+                    var state = opt;
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        display: "grid",
+                        "grid-template-columns": "auto 1fr",
+                        gap: "8px",
+                        "place-items": "center start"
+                    });
+
+                    $('<div/>', { style: "display:inline-block;text-align:left; width: 100px; padding-right:10px; box-sizing:border-box;", class: "fa fa-tag" })
+                        .appendTo(container)
+                        .append(' ' + state.name)
+
+                    $('<div/>', { style: "display:inline-block;text-align:left; width: 100px; padding-right:10px; box-sizing:border-box;" })
+                        .appendTo(container)
+                        .append(state.val)
+                },
+                removable: false,
+                sortable: false,
+                addButton: false
+            });
+
+            $("#node-config-input-thingType").change(function () {
+                $('#attributes-list').editableList('empty');
+                let thingType = RED.nodes.node($("#node-config-input-thingType").val());
+
+                if (!thingType) {
+                    return
+                }
+
+                // keep only the attributes that overlap, needed for "didn't really change"
+                const newAttrs = {}
+
+                for (const attribute of thingType.attributes) {
+                    const currentVal = node.attributes[attribute.name]
+
+                    const attr = {
+                        ...attribute,
+                        val: currentVal
+                    }
+
+
+                    newAttrs[attribute.name] = currentVal
+
+                    $("#attributes-list").editableList('addItem', attr);
+                }
+
+                node.attributes = newAttrs
+
+                const newStates = {}
+
+                $("#states-list").editableList('empty')
+
+                for (const { name, def } of thingType.states) {
+                    const newVal = node.states[name] ?? def
+
+                    $("#states-list").editableList('addItem', {
+                        name,
+                        val: newVal
+                    });
+
+                    newStates[name] = newVal
+                }
+
+                node.states = newStates
+
+            });
+
+            $("#node-config-input-thingType").trigger('change');
+        },
+        oneditsave: function () {
+            var node = this;
+
+            node.attributes = {};
+            $("#attributes-list")
+                .editableList('items')
+                .each(function () {
+                    let state = $(this);
+
+                    const inp = state.find(".attribute-value-property")
+
+                    const type = inp.typedInput("type")
+
+                    const val = inp.typedInput('value');
+
+                    node.attributes[inp.data("label")] = type == "str" ? val : JSON.parse(val);
+
+                })
+
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateThing">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-thingType"><i class="fa fa-bookmark"></i> Type</label>
+        <input type="text" id="node-config-input-thingType" style="width:70%" placeholder="Type">
+    </div>
+    <div class="form-row" id="attributes"  style="width:95%">
+        <label><i class="fa fa-tags"></i> Attributes</label>
+        <ol id="attributes-list"></ol>
+    </div>
+    <div class="form-row" id="states"  style="width:95%">
+        <label><i class="fa fa-tags"></i> States</label>
+        <ol id="states-list"></ol>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="haStateThing">
+    <p>The Thing is an instance of a thing type and may represent a real device</p>
+    <li><strong>Name</strong>: the name of the Thing e.g. "Living Room Thermostat"</li>
+    <li><strong>Attributes</strong>: thing specific properties, that were configured in the thing type</li>
+    <li><strong>States</strong>: thing specific states, that were configured in the thing type (set/update via action node)</li>
+</script>

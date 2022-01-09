@@ -1,0 +1,123 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateAction', {
+        category: 'Home Automation',
+        color: '#b3b3ff',
+        defaults: {
+            thing: {
+                type: "haStateThing",
+                required: true
+            },
+            state: {
+                required: true,
+                value: ""
+            },
+            value: {
+                required: true,
+                value: "payload"
+            },
+            valueType: {
+                required: true,
+                value: "msg"
+            },
+            silent: {
+                type: "bool",
+                value: false
+            }
+        },
+        inputs: 1,
+        outputs: 0,
+        icon: "action.png",
+        label: function () {
+            return this.name || "action";
+        },
+        paletteLabel: "action",
+        oneditprepare: function () {
+            var node = this;
+
+            const select = $("#node-input-state")
+
+            $("#node-input-thing").change(function () {
+                let thing = RED.nodes.node($("#node-input-thing").val());
+
+                select.empty();
+
+                if (!thing) return
+
+                $('<option value="">Choose a State...</option>').appendTo(select)
+
+                for (const i of Object.keys(thing.states)) {
+                    $('<option/>', { value: i })
+                        .appendTo(select)
+                        .append(i)
+                }
+
+                select.val(node.state)
+            });
+
+            $("#node-input-thing").trigger('change');
+
+            $("#node-input-value").typedInput({
+                types: ["msg", "str", "num", "bool", "json", "flow", "global", "env"],
+            }).val(node.value)
+
+            $("#node-input-value").typedInput("type", node.valueType)
+        },
+        oneditsave: function () {
+            var node = this;
+
+            node.attributes = {};
+            $("#attributes-list")
+                .editableList('items')
+                .each(function () {
+                    let state = $(this);
+
+                    const inp = state.find(".attribute-value-property")
+
+                    const type = inp.typedInput("type")
+
+                    const val = inp.typedInput('value');
+
+                    node.attributes[inp.data("label")] = type == "str" ? val : JSON.parse(val);
+
+                })
+
+            node.valueType = $("#node-input-value").typedInput("type")
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateAction">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-input-thing"><i class="fa fa-microchip"></i> Thing</label>
+        <input type="text" id="node-input-thing" style="width:70%" placeholder="Type">
+    </div>
+    <div class="form-row">
+        <label for="node-input-state"><i class="fa fa-microchip"></i> State</label>
+        <select id="node-input-state" style="width:70%">
+            <option disabled value="">Choose a State...</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-value"><i class="fa fa-microchip"></i> Value</label>
+        <input type="text" id="node-input-value" style="width:70%" placeholder="Value">
+    </div>
+    <div class="form-row">
+        <label for="node-input-silent"> </label>
+        <label for="node-input-silent" style="width:70%;">
+            <input type="checkbox" id="node-input-silent" style="display:inline-block; width:22px; vertical-align:top;"><span>Silent</span>
+        </label>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="haStateAction">
+    <p>The Action node updates the given state</p>
+    <li><strong>Name</strong>: Node name.</li> 
+    <li><strong>Thing</strong>: The thing to update.</li>
+    <li><strong>State</strong>: the state of the thing to update.</li>
+    <li><strong>Value</strong>: the value to update the state to.</li>
+    <li><strong>Silent</strong>: update the value without firing events.</li>
+</script>

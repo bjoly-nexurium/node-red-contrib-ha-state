@@ -1,0 +1,215 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateGate', {
+        category: 'Home Automation',
+        color: '#b3b3ff',
+        defaults: {
+            name: {},
+            rules: { value: [] },
+            checkall: { value: "true" },
+            thing: {
+                type: "haStateThing",
+                required: false
+            }
+        },
+        inputs: 1,
+        outputs: 2,
+        outputLabels: ["open", "closed"],
+        icon: "gate.png",
+        label: function () {
+            return this.name || "gate";
+        },
+        paletteLabel: "gate",
+        oneditprepare: function () {
+            var operators = [
+                { v: "eq", t: "==" },
+                { v: "neq", t: "!=" },
+                { v: "lt", t: "<" },
+                { v: "lte", t: "<=" },
+                { v: "gt", t: ">" },
+                { v: "gte", t: ">=" },
+                { v: "cont", t: "contains" },
+                { v: "regex", t: "matches regex" },
+                { v: "true", t: "is true" },
+                { v: "false", t: "is false" }
+            ];
+            //get all thing nodes and sort them alphabetically
+            const allThings = RED.nodes.filterNodes({ type: "haStateThing" });
+
+            //Rules
+            $("#node-input-rule-container").editableList({
+                addItem: function (container, i, opt) {
+                    var rule = opt;
+
+                    const thing = RED.nodes.node(rule.thing);
+
+                    if (!thing) {
+                        $("#node-input-rule-container").editableList("removeItem", rule)
+                        return
+                    }
+
+                    container.css({
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        display: "grid",
+                        "grid-template-columns": "auto 1fr",
+                        gap: "8px",
+                        "place-items": "center start"
+                    });
+
+                    //Add labels
+                    var labelName = $('<div/>', { class: "fa fa-microchip" })
+                        .appendTo(container)
+                        .append(' Thing')
+                    var thingsField = $('<span/>', { class: "node-input-rule-thing", style: "width:100%" })
+                        .appendTo(container)
+                        .data("thing", rule.thing)
+                        .text(thing.name)
+                    var labelState = $('<div/>', { class: "fa fa-sstateap" })
+                        .appendTo(container)
+                        .append(' State')
+                    var statesField = $('<select/>', { class: "node-input-rule-state", style: "width:100%" }).appendTo(container);
+
+                    var labelRule = $('<div/>')
+                        .appendTo(container)
+                        .append(' Rule')
+
+                    var ruleRow = $('<div/>')
+                        .appendTo(container)
+                        .css({
+                            display: "flex",
+                            "justify-content": "stretch",
+                            gap: "8px",
+                            width: "100%"
+                        })
+
+
+
+                    //Add states                            
+                    for (let i of Object.keys(thing.states)) {
+                        statesField.append($("<option></option>").val(i).text(i));
+                    }
+
+                    //Add operators
+                    var operatorField = $('<select/>', { class: "node-input-rule-operator", style: "min-width:0" }).appendTo(ruleRow);
+                    for (var d in operators) {
+                        operatorField.append($("<option></option>").val(operators[d].v).text(operators[d].t));
+                    }
+
+                    //Add comparison value field
+                    var valueField = $('<input/>', { class: "node-input-rule-value", type: "text" })
+                        .appendTo(ruleRow)
+                        .typedInput({
+                            default: 'num'
+                        });
+
+                    //Show/Hide value field
+                    operatorField.change(function () {
+                        var type = $(this).children("option:selected").val();
+
+                        const { t: text } = operators.find(op => {
+                            return op.v == type
+                        })
+
+                        $(this).css({ "flex": `0 0 ${text.length + 5}ch` });
+
+                        if (type == "regex" || type == "lt" || type == "lte" || type == "gt" || type == "gte") {
+                            if (type == "regex") {
+                                valueField.typedInput('types', ['re']);
+                                valueField.typedInput('type', 're');
+                            } else {
+                                valueField.typedInput('types', ['num']);
+                                valueField.typedInput('type', 'num');
+                            }
+                        } else {
+                            valueField.typedInput('types', ['msg', 'flow', 'global', 'str', 'num', 'env']);
+                        }
+
+                        $(ruleRow).find(".red-ui-typedInput-container").prop("style", "flex: 1 0 0")
+                        $(ruleRow).find("input").prop("style", "min-width: 0")
+
+                        if (type === "true" || type === "false") {
+                            valueField.typedInput('hide');
+                            $(this).css({ "flex": `1 0 auto` })
+                        } else {
+                            valueField.typedInput('show');
+                        }
+                    })
+
+                    //Add values
+                    operatorField.val(rule.operator ?? "eq");
+                    valueField.typedInput('value', rule.value);
+                    valueField.typedInput('type', rule.type);
+
+                    operatorField.trigger('change');
+                },
+                removable: true,
+                sortable: true,
+                addButton: false
+            });
+
+            //Add rules
+            for (var i = 0; i < this.rules.length; i++) {
+                var rule = this.rules[i];
+                $("#node-input-rule-container").editableList('addItem', rule);
+            }
+
+            $("#node-add-rule").click(() => {
+                const thing = $("#node-input-thing").val()
+
+                if (RED.nodes.node(thing)) {
+                    $("#node-input-rule-container").editableList("addItem", {
+                        thing
+                    })
+                }
+
+            })
+
+        },
+        oneditsave: function () {
+            var rules = $("#node-input-rule-container").children();
+            var node = this;
+            node.rules = [];
+
+            rules.each(function (i) {
+                var rule = $(this);
+                var thing = rule.find(".node-input-rule-thing").data("thing");
+                var state = rule.find(".node-input-rule-state option:selected").val();
+                var operator = rule.find(".node-input-rule-operator option:selected").val();
+                var value = rule.find(".node-input-rule-value").typedInput('value');
+                var type = rule.find(".node-input-rule-value").typedInput('type');
+
+                var r = { thing: thing, state: state, operator: operator, value: value, type: type };
+                node.rules.push(r);
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateGate">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-input-thing"><i class="fa fa-microchip"></i> Thing</label>
+        <input type="text" id="node-input-thing" style="width:70%" placeholder="Type">
+    </div>
+    <button type="button" class="red-ui-button" id="node-add-rule" style="margin-bottom: 8px;">Add Rule for selected thing</button>
+    <div class="form-row">
+        <ol id="node-input-rule-container"</ol>
+    </div>
+    <div class="form-row">
+        <select id="node-input-checkall" style="width:100%; margin-right:5px;">
+            <option value="true">all rules must be true</option>
+            <option value="false">minimum one rule must be true</option>
+        </select>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="haStateGate">
+    <p>The Gate node is used to redirect the flow if certain conditions are met on given things.</p>
+    <li><strong>Name</strong>: Node name.</li>
+    <li><strong>Thing</strong>: select the thing that you want to add a rule for (multiple different things possible)</li>
+    <li><strong>Rules</strong>: create the conditions for a specific state of the thing</li>
+</script>

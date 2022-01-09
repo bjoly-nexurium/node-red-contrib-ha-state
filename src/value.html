@@ -1,0 +1,123 @@
+<script type="text/javascript">
+    RED.nodes.registerType('haStateValue', {
+        category: 'Home Automation',
+        color: '#b3b3ff',
+        defaults: {
+            thing: {
+                type: "haStateThing",
+                required: true
+            },
+            state: {
+                required: true,
+                value: ""
+            },
+            field: {
+                value: "payload",
+                required: true
+            },
+            fieldType: {
+                value: "msg",
+                required: true
+            },
+            thingInfo: {
+                value: false,
+                type: "bool"
+            }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "value.png",
+        label: function () {
+            return this.name || "value";
+        },
+        paletteLabel: "value",
+        oneditprepare: function () {
+            var node = this;
+
+            $("#node-input-field").typedInput({
+                default: node.fieldType,
+                types: ["msg", "flow", "global"]
+            })
+
+            const select = $("#node-input-state")
+
+            $("#node-input-thing").change(function () {
+                let thing = RED.nodes.node($("#node-input-thing").val());
+
+                select.empty();
+
+                if (!thing) return
+
+                $('<option value="">Choose an State...</option>').appendTo(select)
+
+                for (const i of Object.keys(thing.states)) {
+                    $('<option/>', { value: i })
+                        .appendTo(select)
+                        .append(i)
+                }
+
+                select.val(node.state)
+            });
+
+            $("#node-input-thing").trigger('change');
+        },
+        oneditsave: function () {
+            var node = this;
+
+            node.attributes = {};
+            $("#attributes-list")
+                .editableList('items')
+                .each(function () {
+                    let state = $(this);
+
+                    const inp = state.find(".attribute-value-property")
+
+                    const type = inp.typedInput("type")
+
+                    const val = inp.typedInput('value');
+
+                    node.attributes[inp.data("label")] = type == "str" ? val : JSON.parse(val);
+
+                })
+
+            this.fieldType = $("#node-input-field").typedInput("type")
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="haStateValue">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name" style="width:70%">
+    </div>
+    <div class="form-row">
+        <label for="node-input-thing"><i class="fa fa-microchip"></i> Thing</label>
+        <input type="text" id="node-input-thing" style="width:70%" placeholder="Type">
+    </div>
+    <div class="form-row">
+        <label for="node-input-state"><i class="fa fa-microchip"></i> State</label>
+        <select id="node-input-state" style="width:70%">
+            <option disabled value="">Choose an State...</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-thing"><i class="fa fa-microchip"></i> Field</label>
+        <input type="text" id="node-input-field" style="width:70%" placeholder="Field">
+    </div>
+    <div class="form-row">
+        <label for="node-input-thingInfo"> </label>
+        <label for="node-input-thingInfo" style="width:70%;">
+            <input type="checkbox" id="node-input-thingInfo" style="display:inline-block; width:22px; vertical-align:top;"><span>Export Thing info</span>
+        </label>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="haStateValue">
+    <p>The Value node sets the current state of the thing to a given property on incoming message</p>
+    <li><strong>Name</strong>: Node name.</li> 
+    <li><strong>Thing</strong>: The thing </li>
+    <li><strong>State</strong>: the state to get</li>
+    <li><strong>Field</strong>: the property which will be set to the states value</li>
+    <li><strong>Export Thing Info</strong>: export additional info about the thing such as attributes. In that case the property will be set to an object with a value and a thing property</li>
+</script>
