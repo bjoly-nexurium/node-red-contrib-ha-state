@@ -16,7 +16,11 @@
         outputs: 1,
         icon: "event.png",
         label: function () {
-            return this.name || "event";
+            const thing = RED.nodes.node(this.thing)
+            if (this.state && thing) {
+                return `${this.state}@${thing.name}`;
+            }
+            return "event";
         },
         paletteLabel: "event",
         oneditprepare: function () {
