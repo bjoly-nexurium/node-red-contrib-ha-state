@@ -10,7 +10,7 @@ or manually:
 
 ```bash
 cd <NODE_RED_PATH>
-npm install node-red-contrib-haState
+npm install node-red-contrib-ha-state
 ```
 
 # Functionality
