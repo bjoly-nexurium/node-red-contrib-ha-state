@@ -10,7 +10,11 @@
             state: {
                 required: true,
                 value: ""
-            }
+            },
+            emitEverytime: {
+                type: "boolean",
+                value: false
+            },
         },
         inputs: 0,
         outputs: 1,
@@ -85,6 +89,12 @@
             <option disabled value="">Choose an State...</option>
         </select>
     </div>
+    <div class="form-row">
+        <label for="node-input-emitEverytime"> </label>
+        <label for="node-input-emitEverytime" style="width:70%;">
+            <input type="checkbox" id="node-input-emitEverytime" style="display:inline-block; width:22px; vertical-align:top;"><span>emit every time</span>
+        </label>
+    </div>
 
 </script>
 
@@ -93,4 +103,5 @@
     <li><strong>Name</strong>: Node name.</li> 
     <li><strong>Thing</strong>: The thing to watch.</li>
     <li><strong>State</strong>: the state of the thing to watch.</li>
+    <li><strong>Emit every time</strong>: emit the message also when the state doesn't change.</li>
 </script>
