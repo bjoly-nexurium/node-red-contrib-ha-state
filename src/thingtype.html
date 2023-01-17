@@ -46,7 +46,7 @@
                     const definput = $('<input/>', { class: "node-config-thingtype-default-property", type: "text", style: "width: 100%" })
                         .appendTo(container)
                         .prop('required', true)
-                        .val(state.def)
+                        .val(state.default)
 
                     definput.typedInput({
                         type: state.type,
@@ -60,7 +60,7 @@
 
             $("#node-config-thingtype-list-attributes").editableList({
                 addItem: function (container, i, opt) {
-                    var state = opt;
+                    var attribute = opt;
                     container.css({
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
@@ -77,7 +77,7 @@
                     $('<input/>', { class: "node-config-thingtype-attribute-name-property", type: "text", style: "width: 100%" })
                         .appendTo(container)
                         .prop('required', true)
-                        .val(state.name ?? "")
+                        .val(attribute.name ?? "")
 
                     $('<div/>', { class: "fa fa-tag" })
                         .appendTo(container)
@@ -92,7 +92,7 @@
                             .append(label)
                     }
 
-                    select.val(state.type ?? "str")
+                    select.val(attribute.type ?? "str")
 
                 },
                 removable: true,
@@ -136,7 +136,8 @@
                     const type = inp.typedInput("type")
                     let r = {
                         name: state.find(".node-config-thingtype-name-property").val(),
-                        def: type == "str" ? val : JSON.parse(val)
+                        default: val,
+                        type: type
                     }
                     node.states.push(r);
                 })
