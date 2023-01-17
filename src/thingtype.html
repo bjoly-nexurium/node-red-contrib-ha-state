@@ -19,6 +19,8 @@
             $("#node-config-thingtype-list-states").editableList({
                 addItem: function (container, i, opt) {
                     var state = opt;
+
+                    console.warn(state);
                     container.css({
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
@@ -134,6 +136,7 @@
 
                     const val = inp.typedInput("value")
                     const type = inp.typedInput("type")
+                    
                     let r = {
                         name: state.find(".node-config-thingtype-name-property").val(),
                         default: val,
