@@ -70,7 +70,7 @@
 
                     $('<div/>', { style: "display:inline-block;text-align:left; width: 100px; padding-right:10px; box-sizing:border-box;", class: "fa fa-tag" })
                         .appendTo(container)
-                        .append(' ' + state.name)
+                        .append(' ' + state.name + ': ' + state.type)
 
                     $('<div/>', { style: "display:inline-block;text-align:left; width: 100px; padding-right:10px; box-sizing:border-box;" })
                         .appendTo(container)
@@ -112,12 +112,13 @@
 
                 $("#states-list").editableList('empty')
 
-                for (const { name, def } of thingType.states) {
+                for (const { name, def, type } of thingType.states) {
                     const newVal = node.states[name] ?? def
 
                     $("#states-list").editableList('addItem', {
                         name,
-                        val: newVal
+                        val: newVal,
+                        type: type
                     });
 
                     newStates[name] = newVal
